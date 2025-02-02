@@ -1,7 +1,5 @@
 import os
-'''
-Main application entry point.
-'''
+from contextlib import asynccontextmanager
 from redis.asyncio import Redis
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -16,15 +14,23 @@ It sets up FastAPI and includes various routers.
 
 ### Available Routes:
 - `/contacts` - Manage contacts
-- `/users` - Manage users
+- `/user` - Manage users
 """
 
 Base.metadata.create_all(bind=engine)
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    redis = Redis(host="localhost", port=6379, decode_responses=True)
+    await FastAPILimiter.init(redis)
+    yield
+    await redis.close()
+
 app = FastAPI(
     title="goit-pythonweb-hw-012",
     description=description,
-    version="1.0.0"
+    version="1.0.0",
+    lifespan=lifespan
 )
 
 app.add_middleware(
@@ -34,11 +40,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-@app.on_event("startup")
-async def startup():
-    redis = Redis(host="localhost", port=6379, decode_responses=True)
-    await FastAPILimiter.init(redis)
 
 app.include_router(contacts_router, prefix="/contacts", tags=["Contacts"])
 app.include_router(user_router, prefix="/user", tags=["User"])

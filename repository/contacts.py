@@ -7,7 +7,7 @@ from datetime import date, timedelta
 def create_contact(db: Session, contact_data: ContactCreate, user_id: int) -> Contact:
     db_contact = db.query(Contact).filter(Contact.email == contact_data.email).first()
     if not db_contact:
-        db_contact = Contact(**contact_data.dict())
+        db_contact = Contact(**contact_data.model_dump())
         db.add(db_contact)
         db.commit()
         db.refresh(db_contact)

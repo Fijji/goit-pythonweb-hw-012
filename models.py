@@ -25,3 +25,6 @@ class User(Base):
     email = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
     is_verified = Column(Boolean, default=False)
+    avatar_url = Column(String, nullable=True)
+    role = Column(String, default="user")
+    reset_token = Column(String, nullable=True)
